@@ -1,0 +1,112 @@
+[
+  {
+    "model": "rides.city",
+    "pk": 1,
+    "fields": {
+      "name_ru": "Душанбе",
+      "name_en": "Dushanbe",
+      "name_tj": "Душанбе",
+      "latitude": 38.5598,
+      "longitude": 68.7738
+    }
+  },
+  {
+    "model": "rides.city",
+    "pk": 2,
+    "fields": {
+      "name_ru": "Худжанд",
+      "name_en": "Khujand",
+      "name_tj": "Хуҷанд",
+      "latitude": 40.2839,
+      "longitude": 69.6222
+    }
+  },
+  {
+    "model": "rides.city",
+    "pk": 3,
+    "fields": {
+      "name_ru": "Куляб",
+      "name_en": "Kulob",
+      "name_tj": "Кӯлоб",
+      "latitude": 37.9144,
+      "longitude": 69.7849
+    }
+  },
+  {
+    "model": "rides.city",
+    "pk": 4,
+    "fields": {
+      "name_ru": "Курган-Тюбе",
+      "name_en": "Qurghonteppa",
+      "name_tj": "Қурғонтеппа",
+      "latitude": 37.8350,
+      "longitude": 68.7808
+    }
+  },
+  {
+    "model": "rides.city",
+    "pk": 5,
+    "fields": {
+      "name_ru": "Турсунзаде",
+      "name_en": "Tursunzoda",
+      "name_tj": "Турсунзода",
+      "latitude": 38.5117,
+      "longitude": 68.2317
+    }
+  },
+  {
+    "model": "rides.city",
+    "pk": 6,
+    "fields": {
+      "name_ru": "Истаравшан",
+      "name_en": "Istaravshan",
+      "name_tj": "Истаравшан",
+      "latitude": 39.9142,
+      "longitude": 69.0033
+    }
+  },
+  {
+    "model": "rides.city",
+    "pk": 7,
+    "fields": {
+      "name_ru": "Вахдат",
+      "name_en": "Vahdat",
+      "name_tj": "Ваҳдат",
+      "latitude": 38.5578,
+      "longitude": 69.0122
+    }
+  },
+  {
+    "model": "rides.city",
+    "pk": 8,
+    "fields": {
+      "name_ru": "Хорог",
+      "name_en": "Khorog",
+      "name_tj": "Хоруғ",
+      "latitude": 37.4900,
+      "longitude": 71.5533
+    }
+  },
+  {
+    "model": "rides.city",
+    "pk": 9,
+    "fields": {
+      "name_ru": "Пенджикент",
+      "name_en": "Panjakent",
+      "name_tj": "Панҷакент",
+      "latitude": 39.4961,
+      "longitude": 67.6097
+    }
+  },
+  {
+    "model": "rides.city",
+    "pk": 10,
+    "fields": {
+      "name_ru": "Канибадам",
+      "name_en": "Konibodom",
+      "name_tj": "Конибодом",
+      "latitude": 40.2931,
+      "longitude": 70.4222
+    }
+  }
+]

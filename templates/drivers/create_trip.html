@@ -1,0 +1,370 @@
+{% extends 'base.html' %}
+
+{% block title %}Создать поездку - RahiSafed{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="text-center text-white mb-5">
+            <h1 class="display-5 fw-bold mb-3">
+                <i class="fas fa-plus-circle me-3"></i> Создать новую поездку
+            </h1>
+            <p class="lead">Заполните информацию о вашей поездке</p>
+        </div>
+        
+        <div class="card">
+            <div class="card-body p-4">
+                <form method="post" id="createTripForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-5">
+                        <h5 class="fw-bold mb-4">
+                            <span class="badge bg-primary me-2">1</span>
+                            Маршрут поездки
+                        </h5>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                    Откуда
+                                </label>
+                                <select name="origin" class="form-select form-select-lg" required id="origin">
+                                    <option value="">Выберите город</option>
+                                    {% for city in cities %}
+                                        <option value="{{ city.id }}" 
+                                                data-lat="{{ city.latitude }}" 
+                                                data-lon="{{ city.longitude }}">
+                                            {{ city.name_ru }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                                    Куда
+                                </label>
+                                <select name="destination" class="form-select form-select-lg" required id="destination">
+                                    <option value="">Выберите город</option>
+                                    {% for city in cities %}
+                                        <option value="{{ city.id }}"
+                                                data-lat="{{ city.latitude }}" 
+                                                data-lon="{{ city.longitude }}">
+                                            {{ city.name_ru }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Информация о маршруте -->
+                        <div id="routeInfo" class="card bg-light mt-3 d-none">
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <i class="fas fa-route text-primary me-2"></i>
+                                        <strong>Расстояние:</strong>
+                                        <span id="distance">-</span> км
+                                    </div>
+                                    <div class="col-md-6">
+                                        <i class="fas fa-clock text-primary me-2"></i>
+                                        <strong>Примерное время:</strong>
+                                        <span id="duration">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-5">
+                        <h5 class="fw-bold mb-4">
+                            <span class="badge bg-primary me-2">2</span>
+                            Дата и время отправления
+                        </h5>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-calendar text-primary me-2"></i>
+                                    Дата
+                                </label>
+                                <input type="date" name="departure_date" class="form-control form-control-lg" 
+                                       required min="{{ today }}" id="departureDate">
+                                <div class="form-text">Выберите дату поездки</div>
+                                
+                                <div class="mt-2 d-md-none">
+                                    <label class="form-label small text-muted mb-2 d-block">Быстрый выбор:</label>
+                                    <div class="btn-group w-100" role="group">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                onclick="setDate(0)">Сегодня</button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                onclick="setDate(1)">Завтра</button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                onclick="setDate(2)">Послезавтра</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-clock text-primary me-2"></i>
+                                    Время
+                                </label>
+                                <input type="time" name="departure_time" class="form-control form-control-lg" 
+                                       required id="departureTime">
+                                <div class="form-text">Время отправления</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3 d-none d-md-block">
+                            <label class="form-label small text-muted">Быстрый выбор:</label>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                        onclick="setDate(0)">Сегодня</button>
+                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                        onclick="setDate(1)">Завтра</button>
+                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                        onclick="setDate(2)">Послезавтра</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-5">
+                        <h5 class="fw-bold mb-4">
+                            <span class="badge bg-primary me-2">3</span>
+                            Цена и количество мест
+                        </h5>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-money-bill-wave text-success me-2"></i>
+                                    Цена за одно место (сомони)
+                                </label>
+                                <input type="number" name="price" class="form-control form-control-lg" 
+                                       required min="10" step="10" placeholder="100" id="priceInput">
+                                <div class="form-text">Рекомендуемая цена: 50-200 сомони</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-users text-primary me-2"></i>
+                                    Количество свободных мест
+                                </label>
+                                <input type="number" name="seats" class="form-control form-control-lg" 
+                                       required min="1" max="8" value="3" id="seatsInput">
+                                <div class="form-text">От 1 до 8 мест</div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-suitcase text-primary me-2"></i>
+                                    Вместимость для багажа
+                                </label>
+                                <input type="number" name="luggage_capacity" class="form-control form-control-lg" 
+                                       min="0" max="10" value="0" id="luggageInput">
+                                <div class="form-text">Сколько мест багажа вы можете принять (0 если без багажа)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="card bg-light mt-3">
+                            <div class="card-body">
+                                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+                                    <div>
+                                        <div class="small text-muted mb-1">Потенциальный доход</div>
+                                        <div class="text-muted small">
+                                            (если все места будут забронированы)
+                                        </div>
+                                    </div>
+                                    <div class="text-start text-md-end w-100 w-md-auto">
+                                        <div class="display-6 fw-bold text-success" id="potentialIncome">
+                                            0 с.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-5">
+                        <h5 class="fw-bold mb-4">
+                            <span class="badge bg-primary me-2">4</span>
+                            Дополнительная информация (опционально)
+                        </h5>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-comment text-primary me-2"></i>
+                                Описание / Комментарий
+                            </label>
+                            <textarea name="description" class="form-control" rows="3" 
+                                      placeholder="Например: Еду через Худжанд. Остановка на обед в..."></textarea>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="allowPets">
+                            <label class="form-check-label" for="allowPets">
+                                <i class="fas fa-paw me-1"></i> Разрешены домашние животные
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="allowSmoking">
+                            <label class="form-check-label" for="allowSmoking">
+                                <i class="fas fa-smoking me-1"></i> Курение разрешено
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="card" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                        <div class="card-body text-white p-4">
+                            <h5 class="fw-bold mb-3">
+                                <i class="fas fa-info-circle me-2"></i> Важно знать
+                            </h5>
+                            <ul class="mb-0">
+                                <li>После публикации пассажиры смогут бронировать места</li>
+                                <li>Вы сможете редактировать информацию о поездке</li>
+                                <li>При отмене поездки все пассажиры получат уведомление</li>
+                                <li>Будьте пунктуальны и вежливы с пассажирами</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-paper-plane me-2"></i> Опубликовать поездку
+                        </button>
+                        <a href="{% url 'my_trips' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i> Отмена
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function calculateDistance(lat1, lon1, lat2, lon2) {
+        try {
+            const response = await fetch(`{% url 'calculate_route' %}?lat1=${lat1}&lon1=${lon1}&lat2=${lat2}&lon2=${lon2}`);
+            const data = await response.json();
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            return data;
+        } catch (error) {
+            console.error('Ошибка при расчете расстояния:', error);
+            const R = 6371; 
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const distance = R * c;
+            return {
+                distance: distance,
+                duration: Math.ceil(distance / 60)
+            };
+        }
+    }
+    
+    async function updateRouteInfo() {
+        const origin = document.getElementById('origin');
+        const destination = document.getElementById('destination');
+        
+        if (origin.value && destination.value && origin.value !== destination.value) {
+            const originOption = origin.options[origin.selectedIndex];
+            const destOption = destination.options[destination.selectedIndex];
+            
+            const lat1 = parseFloat(originOption.dataset.lat);
+            const lon1 = parseFloat(originOption.dataset.lon);
+            const lat2 = parseFloat(destOption.dataset.lat);
+            const lon2 = parseFloat(destOption.dataset.lon);
+            
+            document.getElementById('distance').textContent = '...';
+            document.getElementById('duration').textContent = '...';
+            
+            const routeInfo = await calculateDistance(lat1, lon1, lat2, lon2);
+            
+            document.getElementById('distance').textContent = Math.round(routeInfo.distance);
+            document.getElementById('duration').textContent = routeInfo.duration + ' ч';
+            document.getElementById('routeInfo').classList.remove('d-none');
+        } else {
+            document.getElementById('routeInfo').classList.add('d-none');
+        }
+    }
+    
+    document.getElementById('origin').addEventListener('change', updateRouteInfo);
+    document.getElementById('destination').addEventListener('change', updateRouteInfo);
+    
+    function updatePotentialIncome() {
+        const price = parseFloat(document.getElementById('priceInput').value) || 0;
+        const seats = parseInt(document.getElementById('seatsInput').value) || 0;
+        const income = price * seats;
+        document.getElementById('potentialIncome').textContent = income + ' с.';
+    }
+    
+    document.getElementById('priceInput').addEventListener('input', updatePotentialIncome);
+    document.getElementById('seatsInput').addEventListener('input', updatePotentialIncome);
+    
+    function setDate(daysFromNow) {
+        const date = new Date();
+        date.setDate(date.getDate() + daysFromNow);
+        const dateString = date.toISOString().split('T')[0];
+        document.getElementById('departureDate').value = dateString;
+    }
+    
+    document.getElementById('createTripForm').addEventListener('submit', function(e) {
+        const origin = document.getElementById('origin').value;
+        const destination = document.getElementById('destination').value;
+        
+        if (origin === destination) {
+            e.preventDefault();
+            alert('Пункт отправления и назначения не могут совпадать!');
+            return false;
+        }
+    });
+</script>
+
+<style>
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
+    }
+    
+    .card {
+        animation: slideUp 0.5s ease-out;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 768px) {
+        #potentialIncome {
+            font-size: 2rem !important;
+        }
+
+        .btn-group.w-100 .btn {
+            flex: 1;
+        }
+    }
+
+    @media (max-width: 576px) {
+        #potentialIncome {
+            font-size: 1.75rem !important;
+        }
+    }
+</style>
+{% endblock %}

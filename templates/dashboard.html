@@ -1,0 +1,353 @@
+{% extends 'base.html' %}
+{% load math_extras %}
+
+{% block title %}Панель управления - RahiSafed{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="text-white fw-bold">
+            <i class="fas fa-dashboard me-2"></i> Добро пожаловать, {{ user.username }}!
+        </h1>
+        <p class="text-white-50">Управляйте своими поездками и бронированиями</p>
+    </div>
+</div>
+
+<div class="row g-3 mb-5">
+    <div class="col-md-3">
+        <a href="{% url 'search_trips' %}" class="text-decoration-none">
+            <div class="card h-100 border-0" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                <div class="card-body text-white text-center p-4">
+                    <i class="fas fa-search fa-3x mb-3"></i>
+                    <h5 class="fw-bold">Найти поездку</h5>
+                    <p class="small mb-0">Поиск попутчиков</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-3">
+        <a href="{% url 'my_bookings' %}" class="text-decoration-none">
+            <div class="card h-100 border-0" style="background: linear-gradient(135deg, #f59e0b, #f97316);">
+                <div class="card-body text-white text-center p-4">
+                    <i class="fas fa-ticket-alt fa-3x mb-3"></i>
+                    <h5 class="fw-bold">Мои брони</h5>
+                    <p class="small mb-0">{{ bookings.count }} активных</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    {% if is_driver %}
+    <div class="col-md-3">
+        <a href="{% url 'my_trips' %}" class="text-decoration-none">
+            <div class="card h-100 border-0" style="background: linear-gradient(135deg, #10b981, #34d399);">
+                <div class="card-body text-white text-center p-4">
+                    <i class="fas fa-route fa-3x mb-3"></i>
+                    <h5 class="fw-bold">Мои поездки</h5>
+                    <p class="small mb-0">{{ trips.count }} поездок</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-3">
+        <a href="{% url 'create_trip' %}" class="text-decoration-none">
+            <div class="card h-100 border-0" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa);">
+                <div class="card-body text-white text-center p-4">
+                    <i class="fas fa-plus-circle fa-3x mb-3"></i>
+                    <h5 class="fw-bold">Создать поездку</h5>
+                    <p class="small mb-0">Опубликовать новую</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% else %}
+    <div class="col-md-6">
+        <a href="{% url 'become_driver' %}" class="text-decoration-none">
+            <div class="card h-100 border-0" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa);">
+                <div class="card-body text-white text-center p-4">
+                    <i class="fas fa-car fa-3x mb-3"></i>
+                    <h5 class="fw-bold">Стать водителем</h5>
+                    <p class="small mb-0">Зарабатывайте на поездках</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        {% if bookings %}
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-calendar-check me-2 text-primary"></i>
+                        Предстоящие поездки
+                    </h5>
+                    <a href="{% url 'my_bookings' %}" class="btn btn-sm btn-primary">
+                        Смотреть все <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+
+                {% for booking in bookings %}
+                <div class="trip-card mb-3">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="trip-route" style="flex-grow: 1;">
+                            <div class="city" style="font-size: 1rem;">
+                                {{ booking.trip.origin.name_ru }}
+                            </div>
+                            <div class="arrow" style="font-size: 1rem;">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                            <div class="city" style="font-size: 1rem;">
+                                {{ booking.trip.destination.name_ru }}
+                            </div>
+                        </div>
+                        <span class="badge bg-success">Подтверждено</span>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="small text-muted">
+                                <i class="fas fa-calendar me-1"></i> Дата
+                            </div>
+                            <div class="fw-bold">{{ booking.trip.departure_date|date:"d.m.Y" }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="small text-muted">
+                                <i class="fas fa-clock me-1"></i> Время
+                            </div>
+                            <div class="fw-bold">{{ booking.trip.departure_time|time:"H:i" }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="small text-muted">
+                                <i class="fas fa-money-bill-wave me-1"></i> Стоимость
+                            </div>
+                            <div class="fw-bold text-success">{{ booking.total_price }} с.</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-3">
+                        <a href="{% url 'trip_detail' booking.trip.id %}" class="btn btn-sm btn-outline-primary">
+                            Подробнее
+                        </a>
+                        <button class="btn btn-sm btn-outline-primary"
+                            onclick="contactDriver({{ booking.trip.driver.id }})">
+                            <i class="fas fa-comment me-1"></i> Написать
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if is_driver and trips %}
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-route me-2 text-primary"></i>
+                        Ваши поездки
+                    </h5>
+                    <a href="{% url 'my_trips' %}" class="btn btn-sm btn-primary">
+                        Смотреть все <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+
+                {% for trip in trips %}
+                <div class="trip-card mb-3">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="trip-route" style="flex-grow: 1;">
+                            <div class="city" style="font-size: 1rem;">
+                                {{ trip.origin.name_ru }}
+                            </div>
+                            <div class="arrow" style="font-size: 1rem;">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                            <div class="city" style="font-size: 1rem;">
+                                {{ trip.destination.name_ru }}
+                            </div>
+                        </div>
+                        {% if trip.is_active %}
+                        <span class="badge bg-success">Активна</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Завершена</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <div class="small text-muted">Дата</div>
+                            <div class="fw-bold">{{ trip.departure_date|date:"d.m" }}</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="small text-muted">Время</div>
+                            <div class="fw-bold">{{ trip.departure_time|time:"H:i" }}</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="small text-muted">Пассажиры</div>
+                            <div class="fw-bold">{{ trip.booked_seats }}/{{ trip.available_seats }}</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="small text-muted">Доход</div>
+                            <div class="fw-bold text-success">
+                                {{ trip.price_per_seat|multiply:trip.booked_seats }} с.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-3">
+                        <a href="{% url 'trip_passengers' trip.id %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-users me-1"></i> Пассажиры
+                        </a>
+                        <a href="{% url 'edit_trip' trip.id %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit me-1"></i> Редактировать
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4">
+                    <i class="fas fa-bell me-2 text-warning"></i>
+                    Уведомления
+                </h5>
+
+                {% if notifications %}
+                {% for notification in notifications %}
+                <div class="d-flex gap-3 mb-3 pb-3 border-bottom">
+                    <div>
+                        {% if notification.notification_type == 'booking' %}
+                        <i class="fas fa-ticket-alt fa-lg text-success"></i>
+                        {% elif notification.notification_type == 'message' %}
+                        <i class="fas fa-comment fa-lg text-primary"></i>
+                        {% elif notification.notification_type == 'trip_update' %}
+                        <i class="fas fa-exclamation-circle fa-lg text-warning"></i>
+                        {% else %}
+                        <i class="fas fa-info-circle fa-lg text-info"></i>
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold small">{{ notification.title }}</div>
+                        <div class="text-muted small">{{ notification.message }}</div>
+                        <div class="text-muted" style="font-size: 0.7rem;">
+                            {{ notification.created_at|timesince }} назад
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                <a href="#" class="btn btn-sm btn-outline-primary w-100">
+                    Смотреть все
+                </a>
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-bell-slash fa-3x mb-3 opacity-50"></i>
+                    <p class="small mb-0">Нет новых уведомлений</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4">
+                    <i class="fas fa-user me-2 text-primary"></i>
+                    Ваш профиль
+                </h5>
+
+                <div class="text-center mb-4">
+                    <div class="driver-avatar mx-auto" style="width: 80px; height: 80px; font-size: 2rem;">
+                        {{ user.username|slice:":1"|upper }}
+                    </div>
+                    <h5 class="fw-bold mt-3 mb-1">{{ user.username }}</h5>
+                    <div class="text-muted">{{ user.profile.phone }}</div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    {% if is_driver %}
+                    <div class="alert alert-success mb-0">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Вы зарегистрированы как водитель
+                    </div>
+                    {% else %}
+                    <a href="{% url 'become_driver' %}" class="btn btn-primary">
+                        <i class="fas fa-car me-2"></i> Стать водителем
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if is_driver %}
+        <div class="card">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4">
+                    <i class="fas fa-chart-line me-2 text-success"></i>
+                    Ваша статистика
+                </h5>
+
+                <div class="row g-3 text-center">
+                    <div class="col-12 col-sm-6">
+                        <div class="p-3 bg-light rounded">
+                            <div class="display-6 fw-bold text-primary">{{ total_trips }}</div>
+                            <div class="small text-muted">Поездок</div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                        <div class="p-3 bg-light rounded">
+                            <div class="display-6 fw-bold text-success">{{ total_passengers }}</div>
+                            <div class="small text-muted">Пассажиров</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function contactDriver(driverId) {
+        alert('Открытие чата с водителем #' + driverId);
+    }
+</script>
+
+<style>
+    .dashboard-grid>* {
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .trip-card {
+        background: var(--light);
+        padding: 20px;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .trip-card:hover {
+        background: #f0f0f0;
+    }
+</style>
+{% endblock %}

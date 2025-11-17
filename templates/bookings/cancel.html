@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}Отменить бронирование - RahiSafed{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="text-center text-white mb-5">
+            <h1 class="display-5 fw-bold mb-3">
+                <i class="fas fa-ban me-3"></i> Отменить бронирование
+            </h1>
+            <p class="lead">Вы уверены, что хотите отменить это бронирование?</p>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4">
+                    <i class="fas fa-info-circle me-2"></i> Информация о поездке
+                </h5>
+                
+                <div class="trip-route mb-4">
+                    <div class="city" style="font-size: 1.1rem;">
+                        <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                        {{ booking.trip.origin.name_ru }}
+                    </div>
+                    <div class="arrow" style="font-size: 1.2rem;">
+                        <i class="fas fa-long-arrow-alt-right"></i>
+                    </div>
+                    <div class="city" style="font-size: 1.1rem;">
+                        <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                        {{ booking.trip.destination.name_ru }}
+                    </div>
+                </div>
+                
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded">
+                            <i class="fas fa-calendar text-primary me-2"></i>
+                            <strong>Дата:</strong> {{ booking.trip.departure_date|date:"d.m.Y" }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded">
+                            <i class="fas fa-clock text-primary me-2"></i>
+                            <strong>Время:</strong> {{ booking.trip.departure_time|time:"H:i" }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded text-center">
+                            <div class="text-muted small mb-1">
+                                <i class="fas fa-chair me-1"></i> Забронировано мест
+                            </div>
+                            <div class="fw-bold fs-5">{{ booking.seats_count }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded text-center">
+                            <div class="text-muted small mb-1">
+                                <i class="fas fa-money-bill-wave me-1"></i> Сумма
+                            </div>
+                            <div class="fw-bold fs-5 text-success">{{ booking.total_price }} с.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body p-4">
+                <form method="post" id="cancelForm">
+                    {% csrf_token %}
+                    
+                    <h5 class="fw-bold mb-3">
+                        <i class="fas fa-comment me-2"></i> Причина отмены
+                    </h5>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Выберите причину отмены:</label>
+                        <select name="reason" class="form-select form-select-lg" required id="reasonSelect">
+                            <option value="">-- Выберите причину --</option>
+                            {% for reason in cancellation_reasons %}
+                            <option value="{{ reason }}">{{ reason }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Дополнительные комментарии (необязательно):</label>
+                        <textarea name="comments" class="form-control" rows="3" 
+                                  placeholder="Укажите дополнительную информацию, если нужно..."></textarea>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Внимание!</strong> После отмены бронирования:
+                        <ul class="mb-0 mt-2">
+                            <li>Водитель получит уведомление об отмене</li>
+                            <li>Места в поездке снова станут доступными для других пассажиров</li>
+                            <li>Отмена не может быть отменена</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="fas fa-ban me-2"></i> Подтвердить отмену
+                        </button>
+                        <a href="{% url 'my_bookings' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i> Отмена
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Валидация формы
+    document.getElementById('cancelForm').addEventListener('submit', function(e) {
+        const reason = document.getElementById('reasonSelect').value;
+        if (!reason) {
+            e.preventDefault();
+            alert('Пожалуйста, выберите причину отмены');
+            return false;
+        }
+        
+        if (!confirm('Вы уверены, что хотите отменить это бронирование?')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+</script>
+
+<style>
+    .card {
+        animation: slideUp 0.5s ease-out;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}
+

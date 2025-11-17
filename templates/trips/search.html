@@ -1,0 +1,268 @@
+{% extends 'base.html' %}
+{% load math_extras %}
+
+{% block title %}Поиск поездок - RahiSafed{% endblock %}
+
+{% block content %}
+<h1 class="text-white mb-4 fw-bold">
+    <i class="fas fa-search me-2"></i> Найти поездку
+</h1>
+
+<div class="filter-section">
+    <form method="get" id="filterForm">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Откуда</label>
+                <select name="origin" class="form-select">
+                    <option value="">Все города</option>
+                    {% for city in cities %}
+                    {% with city_id_str=city.id|stringformat:"s" %}
+                    <option value="{{ city.id }}" {% if filters.origin == city_id_str %}selected{% endif %}>
+                        {{ city.name_ru }}
+                    </option>
+                    {% endwith %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Куда</label>
+                <select name="destination" class="form-select">
+                    <option value="">Все города</option>
+                    {% for city in cities %}
+                    {% with city_id_str=city.id|stringformat:"s" %}
+                    <option value="{{ city.id }}" {% if filters.destination == city_id_str %}selected{% endif %}>
+                        {{ city.name_ru }}
+                    </option>
+                    {% endwith %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Дата</label>
+                <input type="date" name="date" class="form-control" value="{{ filters.date }}" min="{{ today }}">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Цена от</label>
+                <input type="number" name="min_price" class="form-control" placeholder="0"
+                    value="{{ filters.min_price }}">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Цена до</label>
+                <input type="number" name="max_price" class="form-control" placeholder="∞"
+                    value="{{ filters.max_price }}">
+            </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Сортировка</label>
+                <select name="sort" class="form-select">
+                    <option value="date" {% if filters.sort == 'date' %}selected{% endif %}>По дате</option>
+                    <option value="price_asc" {% if filters.sort == 'price_asc' %}selected{% endif %}>Сначала дешевле
+                    </option>
+                    <option value="price_desc" {% if filters.sort == 'price_desc' %}selected{% endif %}>Сначала дороже
+                    </option>
+                </select>
+            </div>
+
+            <div class="col-md-9 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter me-2"></i> Применить фильтры
+                </button>
+                <a href="{% url 'search_trips' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-redo me-2"></i> Сбросить
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="mb-4">
+    <div class="btn-group" role="group">
+        <a href="?date={{ today }}" class="btn btn-outline-light">
+            <i class="fas fa-calendar-day me-2"></i> Сегодня
+        </a>
+        <a href="?date={{ tomorrow }}" class="btn btn-outline-light">
+            <i class="fas fa-calendar-plus me-2"></i> Завтра
+        </a>
+        <a href="?date={{ next_week }}" class="btn btn-outline-light">
+            <i class="fas fa-calendar-week me-2"></i> На неделе
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="text-white mb-0">
+                Найдено поездок: <span class="badge bg-light text-dark">{{ trips.count }}</span>
+            </h5>
+        </div>
+    </div>
+</div>
+
+{% if trips %}
+<div class="row g-4">
+    {% for trip in trips %}
+    <div class="col-lg-6">
+        <div class="trip-card position-relative">
+            {% if trip.free_seats <= 2 %} <span class="badge bg-danger position-absolute top-0 end-0 m-3">
+                <i class="fas fa-fire me-1"></i> Осталось {{ trip.free_seats }} мест
+                </span>
+                {% endif %}
+
+                <div class="trip-route">
+                    <div class="city">
+                        <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                        {{ trip.origin.name_ru }}
+                    </div>
+                    <div class="arrow">
+                        <i class="fas fa-long-arrow-alt-right"></i>
+                    </div>
+                    <div class="city">
+                        <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                        {{ trip.destination.name_ru }}
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap flex-md-nowrap gap-3 gap-md-4 mb-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-calendar text-primary me-2"></i>
+                        <span class="fw-semibold">{{ trip.departure_date|date:"d.m.Y" }}</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-clock text-primary me-2"></i>
+                        <span class="fw-semibold">{{ trip.departure_time|time:"H:i" }}</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-route text-primary me-2"></i>
+                        <span class="text-muted">~{{ trip.distance|floatformat:0 }} км</span>
+                    </div>
+                </div>
+
+                <div class="driver-info mb-3">
+                    <div class="driver-avatar">
+                        {{ trip.driver.username|slice:":1"|upper }}
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold">{{ trip.driver.username }}</div>
+                        <div class="text-muted small">
+                            <i class="fas fa-car me-1"></i>
+                            {{ trip.driver.driver_profile.car_brand }} {{ trip.driver.driver_profile.car_model }}
+                            <span class="ms-2">
+                                <i class="fas fa-calendar-alt me-1"></i>
+                                {{ trip.driver.driver_profile.car_year }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <div class="text-muted small">
+                            <i class="fas fa-steering-wheel me-1"></i>
+                            {{ trip.driver.driver_profile.driving_experience }} лет опыта
+                        </div>
+                    </div>
+                </div>
+
+                {% if trip.driver.driver_profile.car_photo %}
+                <div class="mb-3">
+                    <img src="{{ trip.driver.driver_profile.car_photo.url }}" class="img-fluid rounded"
+                        style="max-height: 200px; width: 100%; object-fit: cover;" alt="Фото автомобиля">
+                </div>
+                {% endif %}
+
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-md-6">
+                        <div class="p-3 bg-light rounded">
+                            <div class="text-muted small mb-1">
+                                <i class="fas fa-users me-1"></i> Свободно мест
+                            </div>
+                            <div class="fw-bold fs-5">{{ trip.free_seats }} / {{ trip.available_seats }}</div>
+                            <div class="seats-indicator mt-2">
+                                {% for i in trip.available_seats|range %}
+                                {% if forloop.counter0 < trip.free_seats %} <div class="seat available"><i
+                                        class="fas fa-chair"></i></div>
+                            {% else %}
+                            <div class="seat booked"><i class="fas fa-chair"></i></div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                    <div class="p-3 bg-light rounded">
+                        <div class="text-muted small mb-1">
+                            <i class="fas fa-suitcase me-1"></i> Багаж
+                        </div>
+                        <div class="fw-bold fs-5">
+                            {% if trip.luggage_capacity > 0 %}
+                            {{ trip.luggage_capacity }} мест
+                            {% else %}
+                            Без багажа
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+        </div>
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div class="price-tag">
+                {{ trip.price_per_seat }} сомони
+                <div class="small" style="font-size: 0.8rem; opacity: 0.9;">за место</div>
+            </div>
+            <a href="{% url 'trip_detail' trip.id %}" class="btn btn-primary btn-lg">
+                Подробнее <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </div>
+</div>
+{% endfor %}
+</div>
+{% else %}
+<div class="card text-center py-5">
+    <div class="card-body">
+        <i class="fas fa-search fa-5x text-muted mb-4"></i>
+        <h3 class="fw-bold mb-3">Поездки не найдены</h3>
+        <p class="text-muted mb-4">Попробуйте изменить параметры поиска или посмотрите все доступные поездки</p>
+        <a href="{% url 'search_trips' %}" class="btn btn-primary">
+            <i class="fas fa-list me-2"></i> Показать все поездки
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<style>
+    .filter-section {
+        animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .trip-card {
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+</style>
+{% endblock %}

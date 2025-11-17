@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактировать поездку - RahiSafed{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="text-center text-white mb-5">
+            <h1 class="display-5 fw-bold mb-3">
+                <i class="fas fa-edit me-3"></i> Редактировать поездку
+            </h1>
+            <p class="lead">Обновите информацию о вашей поездке</p>
+        </div>
+        
+        <div class="card">
+            <div class="card-body p-4">
+                <form method="post" id="editTripForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-5">
+                        <h5 class="fw-bold mb-4">
+                            <span class="badge bg-secondary me-2">1</span>
+                            Маршрут поездки
+                        </h5>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                    Откуда
+                                </label>
+                                <input type="text" class="form-control form-control-lg" 
+                                       value="{{ trip.origin.name_ru }}" disabled>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                                    Куда
+                                </label>
+                                <input type="text" class="form-control form-control-lg" 
+                                       value="{{ trip.destination.name_ru }}" disabled>
+                            </div>
+                        </div>
+                        <div class="form-text text-muted mt-2">
+                            <i class="fas fa-info-circle me-1"></i> Маршрут нельзя изменить после создания поездки
+                        </div>
+                    </div>
+                    
+                    <div class="mb-5">
+                        <h5 class="fw-bold mb-4">
+                            <span class="badge bg-primary me-2">2</span>
+                            Дата и время отправления
+                        </h5>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-calendar text-primary me-2"></i>
+                                    Дата
+                                </label>
+                                <input type="text" class="form-control form-control-lg" 
+                                       value="{{ trip.departure_date|date:'Y-m-d' }}" disabled>
+                                <div class="form-text">Дату нельзя изменить после создания поездки</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-clock text-primary me-2"></i>
+                                    Время
+                                </label>
+                                <input type="time" name="departure_time" class="form-control form-control-lg" 
+                                       required value="{{ trip.departure_time|time:'H:i' }}" id="departureTime">
+                                <div class="form-text">Время отправления</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Цена и места -->
+                    <div class="mb-5">
+                        <h5 class="fw-bold mb-4">
+                            <span class="badge bg-primary me-2">3</span>
+                            Цена и количество мест
+                        </h5>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-money-bill-wave text-success me-2"></i>
+                                    Цена за одно место (сомони)
+                                </label>
+                                <input type="number" name="price" class="form-control form-control-lg" 
+                                       required min="10" step="10" value="{{ trip.price_per_seat }}" id="priceInput">
+                                <div class="form-text">Рекомендуемая цена: 50-200 сомони</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-users text-primary me-2"></i>
+                                    Количество свободных мест
+                                </label>
+                                <input type="number" name="seats" class="form-control form-control-lg" 
+                                       required min="{{ booked_seats_count }}" max="8" value="{{ trip.available_seats }}" id="seatsInput">
+                                <div class="form-text">
+                                    Минимум {{ booked_seats_count }} мест (уже забронировано)
+                                </div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-suitcase text-primary me-2"></i>
+                                    Вместимость для багажа
+                                </label>
+                                <input type="number" name="luggage_capacity" class="form-control form-control-lg" 
+                                       min="0" max="10" value="{{ trip.luggage_capacity }}" id="luggageInput">
+                                <div class="form-text">Сколько мест багажа вы можете принять (0 если без багажа)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Забронировано:</strong> {{ booked_seats_count }} мест
+                            {% if booked_seats_count > 0 %}
+                            <br><small>Пассажиры будут уведомлены об изменениях в поездке</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="card" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                        <div class="card-body text-white p-4">
+                            <h5 class="fw-bold mb-3">
+                                <i class="fas fa-info-circle me-2"></i> Важно знать
+                            </h5>
+                            <ul class="mb-0">
+                                <li>После сохранения изменений все пассажиры получат уведомление</li>
+                                <li>Вы не можете уменьшить количество мест меньше уже забронированных</li>
+                                <li>Маршрут и дату нельзя изменить после создания поездки</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-save me-2"></i> Сохранить изменения
+                        </button>
+                        <a href="{% url 'my_trips' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i> Отмена
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('seatsInput').addEventListener('change', function() {
+        const minSeats = parseInt(this.getAttribute('min'));
+        const value = parseInt(this.value);
+        if (value < minSeats) {
+            alert(`Нельзя установить меньше ${minSeats} мест. Уже забронировано ${minSeats} мест.`);
+            this.value = minSeats;
+        }
+    });
+</script>
+
+<style>
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
+    }
+    
+    .card {
+        animation: slideUp 0.5s ease-out;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}
+

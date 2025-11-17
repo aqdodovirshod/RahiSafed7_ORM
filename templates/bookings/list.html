@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+
+{% block title %}Мои бронирования - RahiSafed{% endblock %}
+
+{% block content %}
+<h1 class="text-white fw-bold mb-4">
+    <i class="fas fa-ticket-alt me-2"></i> Мои бронирования
+</h1>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="btn-group" role="group">
+            <input type="radio" class="btn-check" name="status" id="active" checked>
+            <label class="btn btn-outline-primary" for="active" onclick="filterBookings('active')">
+                <i class="fas fa-check-circle me-2"></i> Активные
+            </label>
+            
+            <input type="radio" class="btn-check" name="status" id="upcoming">
+            <label class="btn btn-outline-primary" for="upcoming" onclick="filterBookings('upcoming')">
+                <i class="fas fa-calendar-day me-2"></i> Предстоящие
+            </label>
+            
+            <input type="radio" class="btn-check" name="status" id="completed">
+            <label class="btn btn-outline-primary" for="completed" onclick="filterBookings('completed')">
+                <i class="fas fa-history me-2"></i> Завершенные
+            </label>
+        </div>
+    </div>
+</div>
+
+{% if bookings %}
+    <div class="row g-4" id="bookingsList">
+        {% for booking in bookings %}
+        <div class="col-lg-6 booking-item" 
+             data-time="{% if booking.trip.departure_date >= today %}upcoming{% else %}completed{% endif %}">
+            <div class="card h-100">
+                <div class="card-body p-4">
+                    <!-- Статус -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        {% if booking.status == 'confirmed' %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle me-1"></i> Подтверждено
+                            </span>
+                        {% elif booking.status == 'cancelled' %}
+                            <span class="badge bg-danger">
+                                <i class="fas fa-times-circle me-1"></i> Отменено
+                            </span>
+                        {% else %}
+                            <span class="badge bg-warning">
+                                <i class="fas fa-clock me-1"></i> Ожидает
+                            </span>
+                        {% endif %}
+                        
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'trip_detail' booking.trip.id %}">
+                                        <i class="fas fa-eye me-2"></i> Посмотреть поездку
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="#" onclick="contactDriver({{ booking.trip.driver.id }})">
+                                        <i class="fas fa-comment me-2"></i> Связаться с водителем
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" 
+                                       href="{% url 'cancel_booking' booking.id %}">
+                                        <i class="fas fa-ban me-2"></i> Отменить бронь
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="trip-route mb-4">
+                        <div class="city" style="font-size: 1.1rem;">
+                            <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                            {{ booking.trip.origin.name_ru }}
+                        </div>
+                        <div class="arrow" style="font-size: 1.2rem;">
+                            <i class="fas fa-long-arrow-alt-right"></i>
+                        </div>
+                        <div class="city" style="font-size: 1.1rem;">
+                            <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                            {{ booking.trip.destination.name_ru }}
+                        </div>
+                    </div>
+                    
+                    <div class="card bg-light border-0 mb-3">
+                        <div class="card-body">
+                            <div class="row g-2">
+                                <div class="col-12 col-sm-6">
+                                    <i class="fas fa-calendar text-primary me-2"></i>
+                                    <strong>{{ booking.trip.departure_date|date:"d.m.Y" }}</strong>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <i class="fas fa-clock text-primary me-2"></i>
+                                    <strong>{{ booking.trip.departure_time|time:"H:i" }}</strong>
+                                </div>
+                                <div class="col-12 mt-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        {% if booking.trip.departure_date == today %}
+                                            <strong class="text-danger">Сегодня!</strong>
+                                        {% elif booking.trip.departure_date == tomorrow %}
+                                            <strong class="text-warning">Завтра</strong>
+                                        {% else %}
+                                            Через {{ booking.trip.departure_date|timeuntil }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="driver-info mb-3">
+                        <div class="driver-avatar">
+                            {{ booking.trip.driver.username|slice:":1"|upper }}
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold">{{ booking.trip.driver.username }}</div>
+                            <div class="text-muted small">
+                                <i class="fas fa-car me-1"></i>
+                                {{ booking.trip.driver.driver_profile.car_brand }} 
+                                {{ booking.trip.driver.driver_profile.car_model }}
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <a href="tel:{{ booking.trip.driver.profile.phone }}" 
+                               class="btn btn-sm btn-primary">
+                                <i class="fas fa-phone me-1"></i> Позвонить
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-sm-6">
+                            <div class="p-3 bg-light rounded text-center">
+                                <div class="text-muted small mb-1">
+                                    <i class="fas fa-chair me-1"></i> Забронировано
+                                </div>
+                                <div class="fw-bold fs-5">{{ booking.seats_count }} мест</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <div class="p-3 bg-light rounded text-center">
+                                <div class="text-muted small mb-1">
+                                    <i class="fas fa-suitcase me-1"></i> Багаж
+                                </div>
+                                <div class="fw-bold fs-5">{{ booking.luggage_weight }} кг</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-3" style="background: linear-gradient(135deg, var(--success), #34d399);">
+                        <div class="card-body text-white">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                                <div>
+                                    <div class="small mb-1">Стоимость</div>
+                                    <div class="small opacity-75">
+                                        {{ booking.seats_count }} × {{ booking.trip.price_per_seat }} с.
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="display-6 fw-bold">{{ booking.total_price }} с.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" onclick="contactDriver({{ booking.trip.driver.id }})">
+                            <i class="fas fa-comment me-2"></i> Написать водителю
+                        </button>
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-outline-primary" onclick="sendMyLocation({{ booking.id }})">
+                                <i class="fas fa-map-marker-alt me-2"></i> Отправить локацию
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="viewRoute({{ booking.trip.id }})">
+                                <i class="fas fa-route me-2"></i> Маршрут
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card text-center py-5">
+        <div class="card-body">
+            <i class="fas fa-ticket-alt fa-5x text-muted mb-4"></i>
+            <h3 class="fw-bold mb-3">У вас пока нет бронирований</h3>
+            <p class="text-muted mb-4">Начните путешествовать! Найдите подходящую поездку</p>
+            <a href="{% url 'search_trips' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-search me-2"></i> Найти поездку
+            </a>
+        </div>
+    </div>
+{% endif %}
+
+<div class="card mt-5" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+    <div class="card-body text-white p-4">
+        <h5 class="fw-bold mb-3">
+            <i class="fas fa-info-circle me-2"></i> Полезная информация
+        </h5>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="d-flex gap-3">
+                    <i class="fas fa-clock fa-lg"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1">Будьте вовремя</h6>
+                        <p class="small mb-0">
+                            Приходите на место встречи за 5-10 минут до времени отправления
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex gap-3">
+                    <i class="fas fa-phone fa-lg"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1">Будьте на связи</h6>
+                        <p class="small mb-0">
+                            Держите телефон заряженным в день поездки
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex gap-3">
+                    <i class="fas fa-ban fa-lg"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1">Отмена брони</h6>
+                        <p class="small mb-0">
+                            Если планы изменились, отмените бронь заранее
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex gap-3">
+                    <i class="fas fa-smile fa-lg"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1">Будьте вежливы</h6>
+                        <p class="small mb-0">
+                            Уважайте водителя и других пассажиров
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function filterBookings(filter) {
+        const items = document.querySelectorAll('.booking-item');
+        
+        items.forEach(item => {
+            if (filter === 'active') {
+                item.style.display = 'block';
+            } else if (filter === 'upcoming') {
+                item.style.display = item.dataset.time === 'upcoming' ? 'block' : 'none';
+            } else if (filter === 'completed') {
+                item.style.display = item.dataset.time === 'completed' ? 'block' : 'none';
+            }
+        });
+    }
+    
+    function contactDriver(driverId) {
+        alert('Открытие чата с водителем #' + driverId);
+    }
+    
+    function sendMyLocation(bookingId) {
+        if (confirm('Отправить вашу текущую локацию водителю?')) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    alert('Локация отправлена водителю!');
+                }, function() {
+                    alert('Не удалось получить вашу локацию');
+                });
+            } else {
+                alert('Геолокация не поддерживается');
+            }
+        }
+    }
+    
+    function viewRoute(tripId) {
+        window.location.href = `/trips/${tripId}/`;
+    }
+</script>
+
+<style>
+    .booking-item {
+        animation: slideIn 0.5s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+</style>
+{% endblock %}

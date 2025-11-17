@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}RahiSafed - Попутчики Таджикистана{% endblock %}</title>
+    {% load math_extras %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+    :root {
+        --primary: #3730A3;
+        --primary-light: #4F46E5;
+        --primary-dark: #1E1B4B;
+        --secondary: #BE185D;
+        --secondary-light: #DB2777;
+        --success: #047857;
+        --success-light: #059669;
+        --warning: #D97706;
+        --danger: #DC2626;
+        --dark: #111827;
+        --dark-light: #1F2937;
+        --gray: #4B5563;
+        --gray-light: #6B7280;
+        --light: #F3F4F6;
+        --white: #FFFFFF;
+        --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.15);
+        --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.18);
+        --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.25);
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+        --radius-xl: 20px;
+    }
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        background: linear-gradient(135deg, #1E1B4B 0%, #3730A3 50%, #BE185D 100%);
+        background-attachment: fixed;
+        min-height: 100vh;
+        color: var(--dark);
+        line-height: 1.6;
+    }
+
+    /* Navbar - более контрастный */
+    .navbar {
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(12px);
+        box-shadow: var(--shadow-md);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+    }
+
+    .navbar-brand {
+        font-weight: 800;
+        font-size: 1.6rem;
+        color: var(--primary-dark) !important;
+        transition: transform 0.2s ease;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar-brand:hover {
+        transform: scale(1.03);
+        color: var(--primary) !important;
+    }
+
+    .nav-link {
+        color: var(--gray) !important;
+        font-weight: 600;
+        padding: 0.5rem 1rem !important;
+        border-radius: var(--radius-sm);
+        transition: all 0.2s ease;
+    }
+
+    .nav-link:hover {
+        color: var(--primary-dark) !important;
+        background: rgba(55, 48, 163, 0.08);
+    }
+
+    /* Основной контент */
+    .main-content {
+        margin-top: 80px;
+        margin-bottom: 40px;
+    }
+
+    /* Карточки - более контрастные */
+    .card {
+        border: 2px solid rgba(0, 0, 0, 0.08);
+        border-radius: var(--radius-lg);
+        background: var(--white);
+        box-shadow: var(--shadow-md);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .card:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-lg);
+        border-color: rgba(55, 48, 163, 0.2);
+    }
+
+    /* Кнопки - более яркие и контрастные */
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        border: none;
+        padding: 0.75rem 1.8rem;
+        border-radius: var(--radius-md);
+        font-weight: 700;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(55, 48, 163, 0.4);
+        color: white;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(55, 48, 163, 0.5);
+    }
+
+    /* Значки - более выразительные */
+    .badge {
+        padding: 0.5rem 1.1rem;
+        border-radius: var(--radius-xl);
+        font-weight: 700;
+        font-size: 0.85rem;
+        letter-spacing: 0.03em;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Карточка поездки - более выразительная */
+    .trip-card {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        border: 2px solid rgba(0, 0, 0, 0.08);
+        box-shadow: var(--shadow-md);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .trip-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background: linear-gradient(180deg, var(--primary-dark), var(--secondary));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .trip-card:hover {
+        transform: translateX(6px);
+        box-shadow: var(--shadow-lg);
+        border-color: rgba(55, 48, 163, 0.25);
+    }
+
+    .trip-card:hover::before {
+        opacity: 1;
+    }
+
+    /* Маршрут - более четкий */
+    .trip-route {
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .trip-route .city {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--dark);
+        position: relative;
+        padding-bottom: 4px;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .trip-route .city::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+        transition: width 0.3s ease;
+        box-shadow: 0 2px 4px rgba(55, 48, 163, 0.3);
+    }
+
+    .trip-card:hover .trip-route .city::after {
+        width: 100%;
+    }
+
+    .trip-route .arrow {
+        color: var(--primary-dark);
+        font-size: 1.6rem;
+        animation: pulse 2s ease-in-out infinite;
+        filter: drop-shadow(0 2px 4px rgba(55, 48, 163, 0.3));
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 0.7; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.1); }
+    }
+
+    /* Информация о водителе - более насыщенная */
+    .driver-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 1rem;
+        background: linear-gradient(135deg, rgba(55, 48, 163, 0.08), rgba(190, 24, 93, 0.08));
+        border-radius: var(--radius-md);
+        border: 2px solid rgba(55, 48, 163, 0.15);
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .driver-info:hover {
+        background: linear-gradient(135deg, rgba(55, 48, 163, 0.12), rgba(190, 24, 93, 0.12));
+        border-color: rgba(55, 48, 163, 0.25);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+
+    .driver-avatar {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-dark), var(--secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 800;
+        font-size: 1.3rem;
+        box-shadow: 0 4px 16px rgba(55, 48, 163, 0.4);
+        border: 3px solid white;
+    }
+
+    /* Ценник - более яркий */
+    .price-tag {
+        background: linear-gradient(135deg, var(--success), var(--success-light));
+        color: white;
+        padding: 1rem 1.8rem;
+        border-radius: var(--radius-md);
+        font-size: 1.6rem;
+        font-weight: 800;
+        text-align: center;
+        box-shadow: 0 6px 20px rgba(4, 120, 87, 0.4);
+        position: relative;
+        overflow: hidden;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .price-tag::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+        transform: rotate(45deg);
+        animation: shine 3s infinite;
+    }
+
+    @keyframes shine {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+
+    /* Уведомления - более заметные */
+    .notification-badge {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        background: var(--danger);
+        color: white;
+        border-radius: 50%;
+        width: 22px;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 800;
+        box-shadow: 0 3px 12px rgba(220, 38, 38, 0.5);
+        animation: bounce 2s ease-in-out infinite;
+        border: 2px solid white;
+    }
+
+    @keyframes bounce {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.15); }
+    }
+
+    .notification-dropdown {
+        min-width: 360px;
+        width: min(400px, 90vw);
+        max-width: 90vw;
+        border-radius: var(--radius-lg);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.05);
+        border: none;
+        padding: 0;
+        overflow: hidden;
+        background: white;
+        animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-top: 8px;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .notification-header {
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        color: white;
+        padding: 16px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .notification-header .fw-bold {
+        font-size: 1.1rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .notification-header .badge {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        font-size: 0.85rem;
+        padding: 4px 10px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .notification-scroll {
+        max-height: 400px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .notification-scroll::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .notification-scroll::-webkit-scrollbar-track {
+        background: rgba(17, 24, 39, 0.03);
+    }
+
+    .notification-scroll::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, var(--primary), var(--primary-light));
+        border-radius: 999px;
+        border: 2px solid white;
+    }
+
+    .notification-scroll::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(180deg, var(--primary-light), var(--primary));
+    }
+
+    .notification-item {
+        display: flex;
+        gap: 14px;
+        padding: 16px 20px;
+        background: white;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        position: relative;
+        border-left: 4px solid transparent;
+    }
+
+    .notification-item:hover {
+        background: linear-gradient(90deg, rgba(55, 48, 163, 0.04), rgba(55, 48, 163, 0.02));
+        transform: translateX(2px);
+    }
+
+    .notification-item + .notification-item {
+        border-top: 1px solid rgba(17, 24, 39, 0.06);
+    }
+
+    .notification-item.unread {
+        background: linear-gradient(90deg, rgba(55, 48, 163, 0.08), rgba(55, 48, 163, 0.04));
+        border-left-color: var(--primary);
+    }
+
+    .notification-item.unread::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 8px;
+        height: 8px;
+        background: var(--primary);
+        border-radius: 50%;
+        box-shadow: 0 0 8px rgba(55, 48, 163, 0.6);
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+            transform: translateY(-50%) scale(1);
+        }
+        50% {
+            opacity: 0.7;
+            transform: translateY(-50%) scale(1.2);
+        }
+    }
+
+    .notification-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .notification-item.unread .notification-icon {
+        background: linear-gradient(135deg, rgba(55, 48, 163, 0.15), rgba(55, 48, 163, 0.1));
+        box-shadow: 0 4px 12px rgba(55, 48, 163, 0.2);
+    }
+
+    .notification-item:not(.unread) .notification-icon {
+        background: rgba(17, 24, 39, 0.06);
+        color: var(--gray);
+    }
+
+    .notification-item:hover .notification-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .notification-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .notification-title {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--dark);
+        margin-bottom: 4px;
+        line-height: 1.4;
+    }
+
+    .notification-item.unread .notification-title {
+        font-weight: 700;
+        color: var(--primary-dark);
+    }
+
+    .notification-message {
+        font-size: 0.85rem;
+        color: var(--gray);
+        line-height: 1.5;
+        margin-bottom: 6px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .notification-time {
+        font-size: 0.75rem;
+        color: var(--gray-light);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .notification-footer {
+        background: linear-gradient(180deg, rgba(17, 24, 39, 0.02), rgba(17, 24, 39, 0.04));
+        padding: 12px 20px;
+        border-top: 1px solid rgba(17, 24, 39, 0.06);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .notification-empty {
+        padding: 40px 20px;
+        text-align: center;
+        color: var(--gray);
+    }
+
+    .notification-empty i {
+        font-size: 3rem;
+        opacity: 0.3;
+        margin-bottom: 12px;
+    }
+
+    .btn-mark-all-read {
+        font-size: 0.85rem;
+        padding: 6px 12px;
+        border-radius: var(--radius-sm);
+        transition: all 0.2s ease;
+    }
+
+    .btn-mark-all-read:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Секция фильтров - более контрастная */
+    .filter-section {
+        background: var(--white);
+        padding: 1.8rem;
+        border-radius: var(--radius-lg);
+        margin-bottom: 30px;
+        box-shadow: var(--shadow-md);
+        border: 2px solid rgba(0, 0, 0, 0.08);
+    }
+
+    /* Статистика - более яркая */
+    .stat-card {
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        color: white;
+        padding: 2rem;
+        border-radius: var(--radius-lg);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--shadow-lg);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.12), transparent);
+        animation: rotate 20s linear infinite;
+    }
+
+    @keyframes rotate {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .stat-card h3 {
+        font-size: 2.8rem;
+        font-weight: 800;
+        margin-bottom: 10px;
+        position: relative;
+        z-index: 1;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-card p {
+        position: relative;
+        z-index: 1;
+        font-weight: 600;
+    }
+
+    /* Формы - более выразительные */
+    .form-control,
+    .form-select {
+        border-radius: var(--radius-md);
+        border: 2px solid #D1D5DB;
+        padding: 12px 16px;
+        transition: all 0.2s ease;
+        background: var(--white);
+        font-weight: 500;
+        color: var(--dark);
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--primary-dark);
+        box-shadow: 0 0 0 4px rgba(55, 48, 163, 0.12);
+    }
+
+    /* Виджет погоды - более контрастный */
+    .weather-widget {
+        background: linear-gradient(135deg, #0284C7, #0EA5E9);
+        color: white;
+        padding: 1.5rem;
+        border-radius: var(--radius-md);
+        margin-top: 15px;
+        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
+        border: 2px solid rgba(255, 255, 255, 0.15);
+    }
+
+    /* Индикатор мест - более четкий */
+    .seats-indicator {
+        display: flex;
+        gap: 6px;
+        margin-top: 10px;
+    }
+
+    .seat {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        font-weight: 700;
+        border: 2px solid transparent;
+    }
+
+    .seat.available {
+        background: var(--success);
+        color: white;
+        box-shadow: 0 3px 10px rgba(4, 120, 87, 0.4);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .seat.available:hover {
+        transform: scale(1.15);
+        box-shadow: 0 4px 14px rgba(4, 120, 87, 0.5);
+    }
+
+    .seat.booked {
+        background: #9CA3AF;
+        color: white;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Сетка панели управления */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+        margin-top: 30px;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 992px) {
+        .navbar {
+            padding: 0.75rem 1rem;
+        }
+
+        .navbar-brand {
+            font-size: 1.35rem;
+        }
+
+        .main-content {
+            margin-top: 72px;
+        }
+
+        .trip-card {
+            padding: 1.5rem;
+        }
+
+        .notification-dropdown {
+            width: min(340px, 92vw);
+        }
+
+        .trip-route {
+            gap: 0.9rem;
+        }
+
+        .trip-route .city {
+            font-size: 1.2rem;
+        }
+
+        .driver-info {
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .driver-info .text-end {
+            text-align: left !important;
+            width: 100%;
+        }
+
+        .price-tag {
+            font-size: 1.3rem;
+            padding: 0.75rem 1.4rem;
+        }
+
+        .dashboard-grid {
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .trip-route {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .trip-route .arrow {
+            transform: rotate(90deg);
+        }
+
+        .trip-route .city {
+            width: 100%;
+        }
+
+        .driver-info {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .price-tag {
+            width: 100%;
+            justify-content: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .trip-card .btn-lg {
+            width: 100%;
+        }
+
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 576px) {
+        body {
+            font-size: 0.95rem;
+        }
+
+        .navbar-brand {
+            font-size: 1.2rem;
+        }
+
+        .main-content {
+            margin-top: 68px;
+        }
+
+        .card,
+        .filter-section {
+            padding: 1.25rem;
+        }
+
+        .trip-card {
+            padding: 1.25rem;
+        }
+
+        .trip-route .city {
+            font-size: 1.05rem;
+        }
+
+        .driver-avatar {
+            width: 44px;
+            height: 44px;
+            font-size: 1rem;
+        }
+
+        .price-tag {
+            font-size: 1.1rem;
+            padding: 0.6rem 1rem;
+        }
+
+        .seats-indicator {
+            flex-wrap: wrap;
+        }
+
+        .seat {
+            width: 28px;
+            height: 28px;
+        }
+
+        .hero-section h1 {
+            font-size: 2.1rem !important;
+        }
+
+        .hero-section p {
+            font-size: 1rem !important;
+        }
+
+        .notification-dropdown {
+            width: calc(100vw - 32px);
+            margin: 0 16px;
+            max-height: calc(100vh - 100px);
+        }
+
+        .notification-scroll {
+            max-height: calc(100vh - 200px);
+        }
+
+        .notification-item {
+            padding: 14px 16px;
+        }
+
+        .notification-icon {
+            width: 42px;
+            height: 42px;
+            font-size: 1.1rem;
+        }
+
+        .notification-footer {
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .notification-footer .btn {
+            width: 100%;
+        }
+    }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'index' %}">
+                <i class="fas fa-car-side"></i> RahiSafed
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'search_trips' %}">
+                            <i class="fas fa-search"></i> Найти поездку
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'my_bookings' %}">
+                            <i class="fas fa-ticket-alt"></i> Мои брони
+                        </a>
+                    </li>
+                    {% if user|hasattr:"profile" and user.profile.is_driver %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'my_trips' %}">
+                            <i class="fas fa-route"></i> Мои поездки
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'create_trip' %}">
+                            <i class="fas fa-plus-circle"></i> Создать поездку
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link position-relative" href="#" id="notificationsDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-bell"></i> <span class="d-lg-none ms-2">Уведомления</span>
+                            {% with unread=user.notifications|unread_count %}
+                            {% if unread > 0 %}
+                            <span class="notification-badge">{{ unread }}</span>
+                            {% endif %}
+                            {% endwith %}
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end notification-dropdown"
+                            aria-labelledby="notificationsDropdown">
+                            <div class="notification-header">
+                                <span class="fw-bold">
+                                    <i class="fas fa-bell"></i> Уведомления
+                                </span>
+                                {% with unread=user.notifications|unread_count %}
+                                {% if unread > 0 %}
+                                <span class="badge rounded-pill">{{ unread }}</span>
+                                {% endif %}
+                                {% endwith %}
+                            </div>
+                            <div class="notification-scroll">
+                                {% with latest_notifications=user.notifications.all|slice:":8" %}
+                                {% if latest_notifications %}
+                                {% for notification in latest_notifications %}
+                                <div class="notification-item {% if not notification.is_read %}unread{% endif %}" 
+                                     data-notification-id="{{ notification.id }}"
+                                     onclick="markNotificationRead({{ notification.id }}, this)">
+                                    <div class="notification-icon">
+                                        {% if notification.notification_type == 'booking' %}
+                                        <i class="fas fa-ticket-alt text-success"></i>
+                                        {% elif notification.notification_type == 'message' %}
+                                        <i class="fas fa-comment-dots text-primary"></i>
+                                        {% elif notification.notification_type == 'trip_update' %}
+                                        <i class="fas fa-route text-warning"></i>
+                                        {% elif notification.notification_type == 'cancellation' %}
+                                        <i class="fas fa-ban text-danger"></i>
+                                        {% else %}
+                                        <i class="fas fa-info-circle text-info"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="notification-content">
+                                        <div class="notification-title">{{ notification.title }}</div>
+                                        <div class="notification-message">{{ notification.message }}</div>
+                                        <div class="notification-time">
+                                            <i class="fas fa-clock"></i>
+                                            {{ notification.created_at|timesince }} назад
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% else %}
+                                <div class="notification-empty">
+                                    <i class="fas fa-bell-slash"></i>
+                                    <p class="mb-0 mt-2">Нет уведомлений</p>
+                                </div>
+                                {% endif %}
+                                {% endwith %}
+                            </div>
+                            {% with unread=user.notifications|unread_count %}
+                            {% if unread > 0 %}
+                            <div class="notification-footer">
+                                <a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-list me-1"></i> Все уведомления
+                                </a>
+                                <button class="btn btn-sm btn-primary btn-mark-all-read" onclick="markAllNotificationsRead(event)">
+                                    <i class="fas fa-check-double me-1"></i> Отметить все
+                                </button>
+                            </div>
+                            {% else %}
+                            <div class="notification-footer">
+                                <a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline-primary w-100">
+                                    <i class="fas fa-list me-1"></i> Все уведомления
+                                </a>
+                            </div>
+                            {% endif %}
+                            {% endwith %}
+                        </div>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                            data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle"></i> {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'dashboard' %}"><i class="fas fa-dashboard"></i>
+                                    Панель</a></li>
+                            {% if user|hasattr:"profile" and not user.profile.is_driver %}
+                            <li><a class="dropdown-item" href="{% url 'become_driver' %}"><i class="fas fa-car"></i>
+                                    Стать водителем</a></li>
+                            {% endif %}
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item border-0 bg-transparent w-100 text-start" style="cursor: pointer;">
+                                        <i class="fas fa-sign-out-alt"></i> Выход
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Вход</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-primary ms-2" href="{% url 'register' %}">Регистрация</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="container">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function markNotificationRead(notificationId, element) {
+            if (element.classList.contains('unread')) {
+                fetch(`/api/notifications/mark-read/${notificationId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        element.classList.remove('unread');
+                        updateNotificationBadge();
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+
+        function markAllNotificationsRead(event) {
+            event.stopPropagation();
+            fetch('/api/notifications/mark-all-read/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.querySelectorAll('.notification-item.unread').forEach(item => {
+                        item.classList.remove('unread');
+                    });
+                    updateNotificationBadge();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function updateNotificationBadge() {
+            const unreadCount = document.querySelectorAll('.notification-item.unread').length;
+            const badge = document.querySelector('.notification-badge');
+            const headerBadge = document.querySelector('.notification-header .badge');
+            
+            if (unreadCount === 0) {
+                if (badge) badge.style.display = 'none';
+                if (headerBadge) headerBadge.style.display = 'none';
+            } else {
+                if (badge) {
+                    badge.textContent = unreadCount;
+                    badge.style.display = 'flex';
+                }
+                if (headerBadge) {
+                    headerBadge.textContent = unreadCount;
+                    headerBadge.style.display = 'inline-block';
+                }
+            }
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

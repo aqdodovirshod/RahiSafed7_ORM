@@ -1,0 +1,350 @@
+{% extends 'base.html' %}
+
+{% block title %}Пассажиры поездки - RahiSafed{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'my_trips' %}" class="btn btn-outline-light mb-3">
+        <i class="fas fa-arrow-left me-2"></i> Назад к поездкам
+    </a>
+    
+    <h1 class="text-white fw-bold">
+        <i class="fas fa-users me-2"></i> Пассажиры поездки
+    </h1>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body p-4">
+        <div class="trip-route mb-3">
+            <div class="city">{{ trip.origin.name_ru }}</div>
+            <div class="arrow"><i class="fas fa-arrow-right"></i></div>
+            <div class="city">{{ trip.destination.name_ru }}</div>
+        </div>
+        
+        <div class="row g-3">
+            <div class="col-md-3">
+                <div class="text-center p-3 bg-light rounded">
+                    <i class="fas fa-calendar fa-2x text-primary mb-2"></i>
+                    <div class="small text-muted">Дата</div>
+                    <div class="fw-bold">{{ trip.departure_date|date:"d.m.Y" }}</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center p-3 bg-light rounded">
+                    <i class="fas fa-clock fa-2x text-primary mb-2"></i>
+                    <div class="small text-muted">Время</div>
+                    <div class="fw-bold">{{ trip.departure_time|time:"H:i" }}</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center p-3 bg-light rounded">
+                    <i class="fas fa-users fa-2x text-success mb-2"></i>
+                    <div class="small text-muted">Пассажиров</div>
+                    <div class="fw-bold">{{ bookings.count }}</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center p-3 bg-light rounded">
+                    <i class="fas fa-chair fa-2x text-info mb-2"></i>
+                    <div class="small text-muted">Забронировано мест</div>
+                    <div class="fw-bold">{{ trip.booked_seats }} / {{ trip.available_seats }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-ticket-alt fa-3x text-primary mb-3"></i>
+                <h3 class="fw-bold">{{ bookings.count }}</h3>
+                <p class="text-muted mb-0">Активных броней</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-suitcase fa-3x text-warning mb-3"></i>
+                <h3 class="fw-bold">{{ total_luggage }} кг</h3>
+                <p class="text-muted mb-0">Общий багаж</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-money-bill-wave fa-3x text-success mb-3"></i>
+                <h3 class="fw-bold">{{ total_revenue }} с.</h3>
+                <p class="text-muted mb-0">Общая сумма</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if bookings %}
+    <div class="row g-4">
+        {% for booking in bookings %}
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="driver-avatar" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                                {{ booking.passenger.username|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1">{{ booking.passenger.username }}</h5>
+                                <div class="text-muted small">
+                                    <i class="fas fa-calendar-plus me-1"></i>
+                                    Забронировал {{ booking.created_at|date:"d.m.Y" }}
+                                </div>
+                            </div>
+                        </div>
+                        <span class="badge bg-success">
+                            <i class="fas fa-check-circle me-1"></i> Подтверждено
+                        </span>
+                    </div>
+                    
+                    <div class="card bg-light border-0 mb-3">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3">
+                                <i class="fas fa-address-card me-2"></i> Контактная информация
+                            </h6>
+                            <div class="row g-2">
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-phone text-primary me-2"></i>
+                                        <a href="tel:{{ booking.passenger.profile.phone }}" 
+                                           class="text-decoration-none fw-semibold">
+                                            {{ booking.passenger.profile.phone }}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-sm-6">
+                            <div class="p-3 bg-light rounded">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="text-muted small">
+                                        <i class="fas fa-chair me-1"></i> Мест
+                                    </span>
+                                    <span class="fw-bold fs-5">{{ booking.seats_count }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <div class="p-3 bg-light rounded">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="text-muted small">
+                                        <i class="fas fa-suitcase me-1"></i> Багаж
+                                    </span>
+                                    <span class="fw-bold fs-5">{{ booking.luggage_weight }} кг</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-3" style="background: linear-gradient(135deg, var(--success), #34d399);">
+                        <div class="card-body text-white">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                                <div>
+                                    <div class="small mb-1">Оплата</div>
+                                    <div class="small opacity-75">
+                                        {{ booking.seats_count }} × {{ trip.price_per_seat }} с.
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="display-6 fw-bold">{{ booking.total_price }} с.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="#" class="btn btn-primary" 
+                           onclick="openChat({{ booking.passenger.id }})">
+                            <i class="fas fa-comment me-2"></i> Написать сообщение
+                        </a>
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-outline-primary" 
+                                    onclick="callPassenger('{{ booking.passenger.profile.phone }}')">
+                                <i class="fas fa-phone me-2"></i> Позвонить
+                            </button>
+                            <button class="btn btn-outline-primary" 
+                                    onclick="sendLocation({{ booking.id }})">
+                                <i class="fas fa-map-marker-alt me-2"></i> Отправить локацию
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Массовые действия -->
+    <div class="card mt-4" style="background: linear-gradient(135deg, var(--primary), var(--secondary));">
+        <div class="card-body text-white p-4">
+            <h5 class="fw-bold mb-3">
+                <i class="fas fa-bolt me-2"></i> Массовые действия
+            </h5>
+            <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-light" onclick="notifyAllPassengers()">
+                    <i class="fas fa-bell me-2"></i> Уведомить всех
+                </button>
+                <button class="btn btn-light" onclick="shareLocation()">
+                    <i class="fas fa-map-marked-alt me-2"></i> Отправить локацию всем
+                </button>
+                <button class="btn btn-light" onclick="sendMessage()">
+                    <i class="fas fa-comment-dots me-2"></i> Общее сообщение
+                </button>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="card text-center py-5">
+        <div class="card-body">
+            <i class="fas fa-users fa-5x text-muted mb-4"></i>
+            <h3 class="fw-bold mb-3">Пока нет пассажиров</h3>
+            <p class="text-muted mb-4">
+                Когда кто-то забронирует место в этой поездке, информация появится здесь
+            </p>
+            <a href="{% url 'trip_detail' trip.id %}" class="btn btn-primary">
+                <i class="fas fa-eye me-2"></i> Посмотреть поездку
+            </a>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Советы -->
+<div class="card mt-4">
+    <div class="card-body p-4">
+        <h5 class="fw-bold mb-3">
+            <i class="fas fa-lightbulb text-warning me-2"></i> Советы для успешной поездки
+        </h5>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="d-flex gap-3">
+                    <i class="fas fa-check-circle text-success fa-lg"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1">Связывайтесь заранее</h6>
+                        <p class="text-muted small mb-0">
+                            Свяжитесь с пассажирами за день до поездки, 
+                            подтвердите время и место встречи
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex gap-3">
+                    <i class="fas fa-map-marker-alt text-primary fa-lg"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1">Точка встречи</h6>
+                        <p class="text-muted small mb-0">
+                            Договоритесь о конкретном месте посадки 
+                            и будьте там вовремя
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex gap-3">
+                    <i class="fas fa-phone text-info fa-lg"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1">Будьте на связи</h6>
+                        <p class="text-muted small mb-0">
+                            Держите телефон заряженным и отвечайте 
+                            на звонки в день поездки
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex gap-3">
+                    <i class="fas fa-smile text-warning fa-lg"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1">Хорошее настроение</h6>
+                        <p class="text-muted small mb-0">
+                            Улыбка и вежливость создают приятную 
+                            атмосферу в поездке
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openChat(passengerId) {
+        // Открыть чат с пассажиром
+        alert('Открытие чата с пассажиром #' + passengerId);
+    }
+    
+    function callPassenger(phone) {
+        window.location.href = 'tel:' + phone;
+    }
+    
+    function sendLocation(bookingId) {
+        if (confirm('Отправить вашу текущую локацию этому пассажиру?')) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    alert('Локация отправлена!');
+                    // Отправка на сервер
+                });
+            } else {
+                alert('Геолокация не поддерживается вашим браузером');
+            }
+        }
+    }
+    
+    function notifyAllPassengers() {
+        const message = prompt('Введите сообщение для всех пассажиров:');
+        if (message) {
+            // Отправка на сервер
+            alert('Уведомление отправлено всем пассажирам!');
+        }
+    }
+    
+    function shareLocation() {
+        if (confirm('Отправить вашу текущую локацию всем пассажирам?')) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    alert('Локация отправлена всем!');
+                    // Отправка на сервер
+                });
+            }
+        }
+    }
+    
+    function sendMessage() {
+        const message = prompt('Введите сообщение:');
+        if (message) {
+            alert('Сообщение отправлено!');
+        }
+    }
+</script>
+
+<style>
+    .card {
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}

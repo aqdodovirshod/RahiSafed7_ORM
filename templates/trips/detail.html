@@ -1,0 +1,479 @@
+{% extends 'base.html' %}
+{% load math_extras %}
+
+{% block title %}{{ trip.origin.name_ru }} - {{ trip.destination.name_ru }} - RahiSafed{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <div class="trip-route mb-4">
+                    <div class="city">
+                        <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                        {{ trip.origin.name_ru }}
+                    </div>
+                    <div class="arrow">
+                        <i class="fas fa-long-arrow-alt-right"></i>
+                    </div>
+                    <div class="city">
+                        <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                        {{ trip.destination.name_ru }}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="p-3 bg-light rounded text-center">
+                            <i class="fas fa-calendar fa-2x text-primary mb-2"></i>
+                            <div class="small text-muted">Дата</div>
+                            <div class="fw-bold">{{ trip.departure_date|date:"d.m.Y" }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 bg-light rounded text-center">
+                            <i class="fas fa-clock fa-2x text-primary mb-2"></i>
+                            <div class="small text-muted">Время</div>
+                            <div class="fw-bold">{{ trip.departure_time|time:"H:i" }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 bg-light rounded text-center">
+                            <i class="fas fa-route fa-2x text-primary mb-2"></i>
+                            <div class="small text-muted">Расстояние</div>
+                            <div class="fw-bold">~{{ distance|floatformat:0 }} км</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 bg-light rounded text-center">
+                            <i class="fas fa-hourglass-half fa-2x text-primary mb-2"></i>
+                            <div class="small text-muted">В пути</div>
+                            <div class="fw-bold">~{{ duration }} ч</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card bg-light border-0 mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-user-tie me-2"></i> Информация о водителе
+                        </h5>
+
+                        <div class="d-flex gap-3 mb-3">
+                            <div class="driver-avatar" style="width: 80px; height: 80px; font-size: 2rem;">
+                                {{ trip.driver.username|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <h4 class="fw-bold mb-1">{{ trip.driver.username }}</h4>
+                                <div class="text-muted mb-2">
+                                    <i class="fas fa-phone me-2"></i>
+                                    {{ trip.driver.profile.phone }}
+                                </div>
+                                <div class="d-flex gap-3">
+                                    <span class="badge bg-primary">
+                                        <i class="fas fa-steering-wheel me-1"></i>
+                                        {{ trip.driver.driver_profile.driving_experience }} лет опыта
+                                    </span>
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle me-1"></i>
+                                        Проверенный водитель
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold mb-2">Автомобиль:</h6>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-car me-2 text-primary"></i>
+                                    <span>{{ trip.driver.driver_profile.car_brand }} {{ trip.driver.driver_profile.car_model }}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-calendar-alt me-2 text-primary"></i>
+                                    <span>{{ trip.driver.driver_profile.car_year }} год</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-id-card me-2 text-primary"></i>
+                                    <span>{{ trip.driver.driver_profile.license_plate|format_plate }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if trip.driver.driver_profile.car_photo %}
+                        <div class="mt-3">
+                            <img src="{{ trip.driver.driver_profile.car_photo.url }}" class="img-fluid rounded"
+                                style="max-height: 300px; width: 100%; object-fit: cover;" alt="Фото автомобиля">
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="fw-bold mb-3">
+                                    <i class="fas fa-users me-2 text-primary"></i> Места
+                                </h6>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="text-muted">Всего мест:</span>
+                                    <span class="fw-bold fs-5">{{ trip.available_seats }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="text-muted">Занято:</span>
+                                    <span class="fw-bold fs-5 text-danger">{{ trip.booked_seats }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="text-muted">Свободно:</span>
+                                    <span class="fw-bold fs-5 text-success">{{ trip.free_seats }}</span>
+                                </div>
+                                <div class="seats-indicator">
+                                    {% for i in trip.available_seats|range %}
+                                    {% if forloop.counter0 < trip.free_seats %} <div class="seat available"><i
+                                            class="fas fa-chair"></i></div>
+                                {% else %}
+                                <div class="seat booked"><i class="fas fa-chair"></i></div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3">
+                                <i class="fas fa-suitcase me-2 text-primary"></i> Багаж
+                            </h6>
+                            {% if trip.luggage_capacity > 0 %}
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="text-muted">Вместимость:</span>
+                                <span class="fw-bold fs-5">{{ trip.luggage_capacity }} мест</span>
+                            </div>
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Водитель принимает багаж
+                            </div>
+                            {% else %}
+                            <div class="alert alert-warning mb-0">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Поездка без багажа
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-light border-0">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">
+                        <i class="fas fa-map me-2"></i> О маршруте
+                    </h6>
+                    <p class="mb-2">
+                        Маршрут проходит через основные дороги Таджикистана.
+                        Ориентировочное время в пути составляет {{ trip.duration }} часов.
+                    </p>
+                    <div class="small text-muted">
+                        <i class="fas fa-road me-1"></i> Качество дороги: Хорошее
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-lg-4">
+    <div class="card sticky-top" style="top: 100px;">
+        <div class="card-body p-4">
+            <div class="price-tag mb-4">
+                {{ trip.price_per_seat }} сомони
+                <div class="small" style="font-size: 0.9rem; opacity: 0.9;">за одно место</div>
+            </div>
+
+            {% if can_book %}
+            {% if trip.free_seats > 0 %}
+            <form method="post" action="{% url 'book_trip' trip.id %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Количество мест</label>
+                    <select name="seats_count" class="form-select" id="seatsCount" required>
+                        {% for i in trip.free_seats|range %}
+                        <option value="{{ forloop.counter }}">{{ forloop.counter }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                {% if trip.luggage_capacity > 0 %}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Вес багажа (кг)</label>
+                    <input type="number" name="luggage_weight" class="form-control" min="0" value="0" placeholder="0">
+                </div>
+                {% endif %}
+
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Цена за место:</span>
+                            <span class="fw-bold">{{ trip.price_per_seat }} с.</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Количество мест:</span>
+                            <span class="fw-bold" id="selectedSeats">1</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-bold">Итого:</span>
+                            <span class="fw-bold fs-5 text-success" id="totalPrice">
+                                {{ trip.price_per_seat }} с.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 btn-lg mb-2">
+                    <i class="fas fa-ticket-alt me-2"></i> Забронировать
+                </button>
+            </form>
+            {% else %}
+            <div class="alert alert-danger">
+                <i class="fas fa-times-circle me-2"></i>
+                Все места заняты
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Вы не можете забронировать свою поездку
+            </div>
+            {% endif %}
+
+            <div class="d-grid gap-2 mt-3">
+                <a href="tel:{{ trip.driver.profile.phone }}" class="btn btn-outline-primary">
+                    <i class="fas fa-phone me-2"></i> Позвонить водителю
+                </a>
+                <button type="button" class="btn btn-outline-secondary" onclick="shareTrip({{ trip.id }})">
+                    <i class="fas fa-share me-2"></i> Поделиться
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {% if weather %}
+    <div class="weather-widget mt-4">
+        <h6 class="fw-bold mb-3">
+            <i class="fas fa-cloud-sun me-2"></i> Погода в пункте отправления
+        </h6>
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <div class="display-4 fw-bold">{{ weather.main.temp|floatformat:0 }}°</div>
+                <div>{{ weather.weather.0.description }}</div>
+            </div>
+            <div class="text-end">
+                <div><i class="fas fa-wind me-2"></i> {{ weather.wind.speed }} м/с</div>
+                <div><i class="fas fa-tint me-2"></i> {{ weather.main.humidity }}%</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+</div>
+
+<script>
+    const seatsCountElement = document.getElementById('seatsCount');
+    if (seatsCountElement) {
+        seatsCountElement.addEventListener('change', function () {
+            const seats = this.value;
+            const pricePerSeat = {{ trip.price_per_seat }};
+            const total = seats * pricePerSeat;
+
+            document.getElementById('selectedSeats').textContent = seats;
+            document.getElementById('totalPrice').textContent = total + ' с.';
+        });
+    }
+    
+    function shareTrip(tripId) {
+        const tripUrl = window.location.origin + '{% url "trip_detail" trip.id %}';
+        const tripTitle = '{{ trip.origin.name_ru }} - {{ trip.destination.name_ru }}';
+        const tripDate = '{{ trip.departure_date|date:"d.m.Y" }}';
+        const tripTime = '{{ trip.departure_time|time:"H:i" }}';
+        const tripPrice = '{{ trip.price_per_seat }}';
+        
+        const shareText = `Поездка: ${tripTitle}\nДата: ${tripDate} в ${tripTime}\nЦена: ${tripPrice} сомони за место\n\nПодробнее: ${tripUrl}`;
+        
+        if (navigator.share) {
+            navigator.share({
+                title: `Поездка ${tripTitle}`,
+                text: shareText,
+                url: tripUrl
+            }).catch(err => {
+                console.log('Ошибка при попытке поделиться:', err);
+                copyToClipboard(tripUrl);
+            });
+        } else {
+            copyToClipboard(tripUrl);
+        }
+    }
+    
+    function copyToClipboard(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('Ссылка скопирована в буфер обмена!');
+            }).catch(err => {
+                fallbackCopyToClipboard(text);
+            });
+        } else {
+            fallbackCopyToClipboard(text);
+        }
+    }
+    
+    function fallbackCopyToClipboard(text) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            showNotification('Ссылка скопирована в буфер обмена!');
+        } catch (err) {
+            alert('Не удалось скопировать ссылку. Скопируйте вручную:\n' + text);
+        }
+        document.body.removeChild(textArea);
+    }
+    
+    function showNotification(message) {
+        const notification = document.createElement('div');
+        notification.className = 'alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3';
+        notification.style.zIndex = '9999';
+        notification.style.minWidth = '300px';
+        notification.innerHTML = '<i class="fas fa-check-circle me-2"></i>' + message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+</script>
+
+<style>
+    .sticky-top {
+        animation: slideIn 0.5s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @media (max-width: 992px) {
+        .sticky-top {
+            position: relative !important;
+            top: 0 !important;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .row.g-3.mb-4 > [class*="col-"] {
+            margin-bottom: 1rem;
+        }
+
+        .p-3.bg-light.rounded {
+            padding: 1rem !important;
+        }
+
+        .p-3.bg-light.rounded i {
+            font-size: 1.5rem !important;
+        }
+
+        .driver-avatar {
+            width: 60px !important;
+            height: 60px !important;
+            font-size: 1.5rem !important;
+        }
+
+        .d-flex.gap-3 {
+            flex-direction: column;
+            gap: 1rem !important;
+        }
+
+        .d-flex.gap-3 > div {
+            width: 100%;
+        }
+
+        .row.g-2 > [class*="col-"] {
+            margin-bottom: 0.75rem;
+        }
+
+        .row.g-3.mb-4 {
+            margin-bottom: 1.5rem !important;
+        }
+
+        .card-body.p-4 {
+            padding: 1.25rem !important;
+        }
+
+        .trip-route {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .trip-route .arrow {
+            transform: rotate(90deg);
+            margin: 0.5rem 0;
+        }
+
+        .price-tag {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .d-grid.gap-2 .btn {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .p-3.bg-light.rounded i {
+            font-size: 1.25rem !important;
+        }
+
+        .p-3.bg-light.rounded .fw-bold {
+            font-size: 0.9rem !important;
+        }
+
+        .driver-avatar {
+            width: 50px !important;
+            height: 50px !important;
+            font-size: 1.25rem !important;
+        }
+
+        .btn-group {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .btn-group .btn {
+            border-radius: var(--radius-md) !important;
+            margin-bottom: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+{% load math_extras %}
+
+{% block content %}
+<div class="hero-section text-white text-center py-5 mb-5">
+    <div class="container">
+        <h1 class="display-3 fw-bold mb-4" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+            Путешествуйте вместе по Таджикистану
+        </h1>
+        <p class="lead mb-5" style="font-size: 1.3rem;">
+            Удобный сервис для поиска попутчиков. Экономьте деньги, находите новых друзей!
+        </p>
+
+        <div class="card mx-auto" style="max-width: 900px; background: rgba(255,255,255,0.95);">
+            <div class="card-body p-4">
+                <form action="{% url 'search_trips' %}" method="get">
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <label class="form-label text-dark fw-semibold">Откуда</label>
+                            <select name="origin" class="form-select" required>
+                                <option value="">Выберите город</option>
+                                {% for city in cities %}
+                                <option value="{{ city.id }}">{{ city.name_ru }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label text-dark fw-semibold">Куда</label>
+                            <select name="destination" class="form-select" required>
+                                <option value="">Выберите город</option>
+                                {% for city in cities %}
+                                <option value="{{ city.id }}">{{ city.name_ru }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search"></i> Найти
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-4">
+                            <label class="form-label text-dark">Дата</label>
+                            <input type="date" name="date" class="form-control" min="{{ today }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-dark">Мест нужно</label>
+                            <input type="number" name="seats" class="form-control" min="1" value="1">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-dark">Макс. цена</label>
+                            <input type="number" name="max_price" class="form-control" placeholder="Без ограничений">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <h2 class="text-center text-white mb-5 fw-bold">Почему выбирают нас?</h2>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 text-center">
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-hand-holding-usd fa-3x" style="color: var(--success);"></i>
+                    </div>
+                    <h4 class="fw-bold">Экономия денег</h4>
+                    <p class="text-muted">Делите расходы на бензин с попутчиками и экономьте до 70% на поездках</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 text-center">
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-shield-alt fa-3x" style="color: var(--primary);"></i>
+                    </div>
+                    <h4 class="fw-bold">Безопасность</h4>
+                    <p class="text-muted">Проверенные водители, рейтинги и отзывы. Вся информация о машине и водителе
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 text-center">
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-users fa-3x" style="color: var(--secondary);"></i>
+                    </div>
+                    <h4 class="fw-bold">Новые знакомства</h4>
+                    <p class="text-muted">Интересное общение в дороге и возможность завести новых друзей</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if recent_trips %}
+<div class="container mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-white fw-bold">Актуальные поездки</h2>
+        <a href="{% url 'search_trips' %}" class="btn btn-light">
+            Смотреть все <i class="fas fa-arrow-right ms-2"></i>
+        </a>
+    </div>
+
+    <div class="row g-4">
+        {% for trip in recent_trips %}
+        <div class="col-md-6 col-lg-4">
+            <div class="trip-card">
+                <div class="trip-route">
+                    <div class="city">{{ trip.origin.name_ru }}</div>
+                    <div class="arrow"><i class="fas fa-arrow-right"></i></div>
+                    <div class="city">{{ trip.destination.name_ru }}</div>
+                </div>
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+                    <div>
+                        <i class="fas fa-calendar text-primary"></i>
+                        <span class="ms-2">{{ trip.departure_date|date:"d.m.Y" }}</span>
+                    </div>
+                    <div>
+                        <i class="fas fa-clock text-primary"></i>
+                        <span class="ms-2">{{ trip.departure_time|time:"H:i" }}</span>
+                    </div>
+                </div>
+
+                <div class="driver-info mb-3">
+                    <div class="driver-avatar">
+                        {{ trip.driver.username|slice:":1"|upper }}
+                    </div>
+                    <div>
+                        <div class="fw-bold">{{ trip.driver.username }}</div>
+                        <small class="text-muted">
+                            {{ trip.driver.driver_profile.car_brand }} {{ trip.driver.driver_profile.car_model }}
+                        </small>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <div class="seats-indicator">
+                            {% for i in trip.free_seats|range %}
+                            <div class="seat available"><i class="fas fa-chair"></i></div>
+                            {% endfor %}
+                        </div>
+                        <small class="text-muted">{{ trip.free_seats }} мест свободно</small>
+                    </div>
+                    <div class="price-tag" style="font-size: 1.2rem; padding: 10px 20px;">
+                        {{ trip.price_per_seat }} с.
+                    </div>
+                </div>
+
+                <a href="{% url 'trip_detail' trip.id %}" class="btn btn-primary w-100 mt-3">
+                    Подробнее
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="container mb-5">
+    <div class="card">
+        <div class="card-body p-5">
+            <h2 class="text-center mb-5 fw-bold">Как это работает?</h2>
+
+            <div class="row g-4">
+                <div class="col-md-3 text-center">
+                    <div class="mb-3">
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center"
+                            style="width: 80px; height: 80px; font-size: 2rem; font-weight: 700;">
+                            1
+                        </div>
+                    </div>
+                    <h5 class="fw-bold">Зарегистрируйтесь</h5>
+                    <p class="text-muted">Создайте аккаунт за 1 минуту</p>
+                </div>
+
+                <div class="col-md-3 text-center">
+                    <div class="mb-3">
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center"
+                            style="width: 80px; height: 80px; font-size: 2rem; font-weight: 700;">
+                            2
+                        </div>
+                    </div>
+                    <h5 class="fw-bold">Найдите поездку</h5>
+                    <p class="text-muted">Используйте удобные фильтры поиска</p>
+                </div>
+
+                <div class="col-md-3 text-center">
+                    <div class="mb-3">
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center"
+                            style="width: 80px; height: 80px; font-size: 2rem; font-weight: 700;">
+                            3
+                        </div>
+                    </div>
+                    <h5 class="fw-bold">Забронируйте</h5>
+                    <p class="text-muted">Забронируйте место онлайн</p>
+                </div>
+
+                <div class="col-md-3 text-center">
+                    <div class="mb-3">
+                        <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center"
+                            style="width: 80px; height: 80px; font-size: 2rem; font-weight: 700;">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold">Путешествуйте</h5>
+                    <p class="text-muted">Приятной поездки!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if user.is_authenticated and not user.profile.is_driver %}
+<div class="container mb-5">
+    <div class="card" style="background: linear-gradient(135deg, var(--primary), var(--secondary));">
+        <div class="card-body text-white text-center p-5">
+            <h2 class="fw-bold mb-3">Хотите зарабатывать на поездках?</h2>
+            <p class="lead mb-4">Станьте водителем и публикуйте свои маршруты. Окупайте расходы на бензин!</p>
+            <a href="{% url 'become_driver' %}" class="btn btn-light btn-lg">
+                <i class="fas fa-car me-2"></i> Стать водителем
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+    .hero-section {
+        margin-top: -80px;
+        padding-top: 150px !important;
+        padding-bottom: 100px !important;
+    }
+
+    @media (max-width: 768px) {
+        .hero-section {
+            margin-top: -60px;
+            padding-top: 120px !important;
+            padding-bottom: 75px !important;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .hero-section {
+            margin-top: -50px;
+            padding-top: 110px !important;
+            padding-bottom: 60px !important;
+        }
+
+        .hero-section .card .card-body {
+            padding: 1.5rem !important;
+        }
+
+        .hero-section .display-3 {
+            font-size: 2.3rem !important;
+        }
+
+        .hero-section .lead {
+            font-size: 1.05rem !important;
+        }
+
+        .hero-section form .row > [class*="col-"] {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+
+        .hero-section form .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
